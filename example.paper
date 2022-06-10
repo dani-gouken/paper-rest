@@ -1,0 +1,24 @@
+@string	apiKey	"my-api-key"
+@string	baseUrl	"http://localhost:8000"
+
+auth-bearer-token	<:api-key>
+
+post <:baseUrl>/initiate initiate-payment
+	headers	x-api-key <:apiKey> 
+	>		content-type application/json
+	query	foo	<:bar>
+	>		bar	baz
+	json	<<<
+		{
+			"publicKey": "y7da3joz25uo20mvwpju9mxi9sdhcr22icgm9koizyflslf4r6dwg115e5w80j96",
+			"amount": 500,
+			"reference": ":foo-bar",
+			"channel": "<:channel>",
+			"country": "cm",
+			"recipient": "23770719152",
+			"type": "payout"
+		}
+	>>>
+end
+
+SEND initiate-payment
