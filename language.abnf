@@ -1,0 +1,23 @@
+white-space = " " / %x09 ; Space
+multi-white-space = *white-space
+
+newline =  %x0A / %x0D.0A  ; CRLF
+
+expression-separator = %x59 / newline; semi-colon ;
+qualifier = ALPHA *(ALPHA/DIGIT/"_") ; a-z/0-9/_
+
+parameter-separator = white-space / %x44 ; space | ,
+parameter = qualifier
+parameter-list = parameter / 1*(parameter parameter-separator [multi-white-space]) parameter  
+
+expression = qualifier parameter-list
+
+simple-directive = expression expression-separator
+
+directive = simple-directive
+
+
+;; Built-in ABNF terms, reproduced here for clarity
+
+ALPHA = %x41-5A / %x61-7A ; A-Z / a-z
+DIGIT = %x30-39 ; 0-9

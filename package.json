@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon src/index.ts",
+    "dev": "nodemon src/index.ts -e ts,paper",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -13,5 +13,8 @@
     "eslint": "^8.17.0",
     "nodemon": "^2.0.16",
     "ts-node": "^10.8.1"
+  },
+  "dependencies": {
+    "apg": "^3.1.2"
   }
 }
