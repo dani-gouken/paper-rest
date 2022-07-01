@@ -1,12 +1,13 @@
 import { CodeInterface } from "../source";
 import { CharIter } from "./char_iter";
-import { isAlphaNumericChar, isEmptyChar, isNotQuote, isNotSpaceChar, isNumericChar, isQuote, isSpaceChar, isString } from "./char_helper";
-import { ConsoleErrorWriter, LexicalError } from "../error";
+import { isAlphaNumericChar, isNumericChar, isSpaceChar, isString } from "./char_helper";
+import { LexicalError } from "../error";
 import { CharLoc, Keyword, Token, TokenKind, TokenLoc } from "../types";
+import { TokenIter } from "./token_iter";
 
 export interface TokenizerInterface {
-  getTokens(): { error: boolean, tokens: Token[] };
-}
+  getTokens(): TokenIter
+};
 
 export class Tokenizer implements TokenizerInterface {
   private currentToken: Token | null = null;
@@ -22,7 +23,7 @@ export class Tokenizer implements TokenizerInterface {
   private iter: CharIter;
 
   constructor(private code: CodeInterface) {
-    this.iter = new CharIter(code.getContent());
+    this.iter = new CharIter([...code.getContent()]);
     this.iter.onMoveNext(() => this.col++);
   }
 
@@ -39,11 +40,11 @@ export class Tokenizer implements TokenizerInterface {
     return this.error != null;
   }
 
-  getTokens(): { error: boolean, tokens: Token[] } {
+  getTokens(): TokenIter {
     if (!this.iter.empty()) {
       this.tokenize();
     }
-    return { error: this.hasError(), tokens: this.tokens ?? [] };
+    return new TokenIter(this.tokens ?? []);
   }
 
   tokenize() {
@@ -52,8 +53,7 @@ export class Tokenizer implements TokenizerInterface {
     do {
       const token = this.ingest();
       if (this.hasError()) {
-        (new ConsoleErrorWriter()).writeLexicalError(this.error!)
-        break;
+        throw this.error;
       }
       this.tokens.push(token);
     } while (this.iter.nextIf(isString) || this.stopped())
@@ -145,12 +145,12 @@ export class Tokenizer implements TokenizerInterface {
       value: word
     };
   }
-  ingestId(): Token {
+  ingestIdOrString(): Token {
     const start = this.currentLoc();
     let charBegin = this.iter.current();
     let word = this.iter.current()!;
     let charEnd;
-    while (this.iter.nextIf((v) => isAlphaNumericChar(v) || v == "_")) {
+    while (this.iter.nextIf((v) => isAlphaNumericChar(v) || ["_", "-"].includes(v))) {
       charEnd = this.iter.current();
       word += charEnd;
     }
@@ -164,18 +164,18 @@ export class Tokenizer implements TokenizerInterface {
 
   ingestNumber(): Token {
     const start = this.currentLoc();
-    let charBegin = this.iter.current();
     let word = this.iter.current()!;
     let charEnd;
     let hasDecimalPoint = false;
-    while (this.iter.nextIf((v) => isNumericChar(v) || (v == "."  && !hasDecimalPoint))) {
+    while (this.iter.nextIf((v) => isNumericChar(v) || (v == "." && !hasDecimalPoint))) {
       charEnd = this.iter.current();
-      hasDecimalPoint = charEnd === ".";
+      if (!hasDecimalPoint && charEnd === ".") {
+        hasDecimalPoint = true;
+      }
       word += charEnd;
     }
-    const isKeyword = Keyword.includes(word);
     return {
-      kind: isKeyword ? TokenKind.Keyword : TokenKind.Id,
+      kind: TokenKind.NumLit,
       location: this.tokenLocFromCharLoc(start, this.currentLoc()),
       value: word
     };
@@ -189,14 +189,14 @@ export class Tokenizer implements TokenizerInterface {
         return this.tokenFromCurrentChar(TokenKind.Equals);
       case this.iter.is(";"):
         return this.tokenFromCurrentChar(TokenKind.SemiColon);
-      case this.iter.is(":"):
-        return this.tokenFromCurrentChar(TokenKind.Equals);
-      case this.iter.is(","):
-        return this.tokenFromCurrentChar(TokenKind.Equals);
       case this.iter.is("+"):
         return this.tokenFromCurrentChar(TokenKind.Plus);
       case this.iter.is("-"):
         return this.tokenFromCurrentChar(TokenKind.Minus);
+      case this.iter.is(":"):
+        return this.tokenFromCurrentChar(TokenKind.Colon);
+      case this.iter.is(","):
+        return this.tokenFromCurrentChar(TokenKind.Comma);
       case this.iter.is("{"):
         return this.tokenFromCurrentChar(TokenKind.OpCurlyBracket);
       case this.iter.is("}"):
@@ -207,9 +207,9 @@ export class Tokenizer implements TokenizerInterface {
         return this.ingestString();
       default:
         if (this.iter.isAlpha() || this.iter.is("_")) {
-          return this.ingestId();
+          return this.ingestIdOrString();
         } else if (this.iter.isNumeric()) {
-         return this.ingestNumber();
+          return this.ingestNumber();
         } else {
           return this.addError(`unexpected ${this.iter.current()}`, this.tokenFromCurrentChar(TokenKind.Error));
         }

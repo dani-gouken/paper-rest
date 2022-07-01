@@ -1,6 +1,13 @@
 import { CodeInterface, SourceInterface } from "./source";
 import { Token } from "./types";
+export class ParseError {
+    constructor(
+        private opts: {
+            message: string
+        }
 
+    ) { }
+}
 export class LexicalError {
     constructor(
         private opts: {

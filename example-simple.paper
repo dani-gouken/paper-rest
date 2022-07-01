@@ -1,1 +1,2 @@
 post 'http://google.fr';
+get 'http://google.fr';

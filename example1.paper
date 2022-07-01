@@ -1,11 +1,11 @@
-url = "https://google.fr";
+url = "https://google.fr"
 openGoogle =  get url {
     header {
         x-api-key: "key",
         version: "..1",
         Content-Type: "application/json"
     };
-    query {userId: 1};
+    query {userId: 1 - 1};
 }
 
 postGoogle = post url;

@@ -6,6 +6,7 @@ export enum TokenKind {
     Space = "Space",
     NewLine = "NewLine",
     Equals = "Equals",
+    Colon = "Colon",
     Plus = "Plus",
     Minus = "Minus",
     Quote = "Quote",
@@ -13,8 +14,21 @@ export enum TokenKind {
     OpCurlyBracket = "OpCurlyBracket",
     CloCurlyBracket = "CloCurlyBracket",
     Error = "Error",
-    SemiColon = "SemiColon"
+    SemiColon = "SemiColon",
+    Comma = "Comma"
 }
+
+export const TerminalTokens = [
+    TokenKind.NewLine,
+    TokenKind.SemiColon,
+];
+
+export const ContextStartToken = TokenKind.OpCurlyBracket;
+export const ContextEndToken = TokenKind.CloCurlyBracket;
+export const ContextTokens = [
+    ContextStartToken,
+    ContextEndToken
+];
 
 export const Keywords = [
     "string",
