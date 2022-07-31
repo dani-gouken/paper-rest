@@ -1,3 +1,0 @@
-interface Identifiable {
-    getId(): Id;
-} 

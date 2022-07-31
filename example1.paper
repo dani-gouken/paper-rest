@@ -1,16 +1,14 @@
-var url, "http://api.com";
-client payment {
+var(url, "http://api.com");
+client(payment) {
     var {
         string url;
         number string, "+237650675795";
     }
-
-    get  @url {
-        header  x-api-key, key;
-            >   version, 1;
-            >   Content-Type, application/json;
-        
-        query: {userId: 1-1};
+    get (@url) {
+        header(x-api-key, key)
+        >(version, 1);
+        >(Content-Type, application/json);
+        >(query: {userId: 1-1});
     }
 }
 
@@ -22,7 +20,6 @@ post(iniatiate-payment,"https://google.fr"){
         key "userId";
         value "foo";
     }
-    
     json """
         {
             "amount": 1000  
