@@ -5,7 +5,7 @@ export interface CodeInterface  {
   getLines(): string[];
 };
 
-class Code implements CodeInterface {
+export class Code implements CodeInterface {
   private lines: string[];
   constructor(private content: string){
     this.lines = this.content.split("\n"); 

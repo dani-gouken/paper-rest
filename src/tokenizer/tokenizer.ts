@@ -1,4 +1,4 @@
-import { CodeInterface } from "../source";
+import { Code, CodeInterface, StringSource } from "../source";
 import { CharIter } from "./char_iter";
 import { isAlphaNumericChar, isNumericChar, isSpaceChar, isString } from "./char_helper";
 import { LexicalError } from "../error";
@@ -21,13 +21,16 @@ export class Tokenizer implements TokenizerInterface {
   private shouldStop: boolean = false;
 
   private iter: CharIter;
+  static fromString(code: string): Tokenizer {
+    return new Tokenizer(new Code(code));
+  }
 
   constructor(private code: CodeInterface) {
     this.iter = new CharIter([...code.getContent()]);
     this.iter.onMoveNext(() => this.col++);
   }
 
-  addError(message: string, token: Token): Token {
+  protected addError(message: string, token: Token): Token {
     this.error = new LexicalError({
       message,
       code: this.code,
@@ -36,7 +39,7 @@ export class Tokenizer implements TokenizerInterface {
     return token;
   }
 
-  hasError(): boolean {
+  protected hasError(): boolean {
     return this.error != null;
   }
 
@@ -47,7 +50,7 @@ export class Tokenizer implements TokenizerInterface {
     return new TokenIter(this.tokens ?? []);
   }
 
-  tokenize() {
+  protected tokenize() {
     this.line = 1;
     this.col = 0;
     do {
@@ -59,22 +62,22 @@ export class Tokenizer implements TokenizerInterface {
     } while (this.iter.nextIf(isString) || this.stopped())
   }
 
-  stop() {
+  protected stop() {
     this.shouldStop = true;
   }
 
-  stopped() {
+  protected stopped() {
     this.shouldStop == true;
   }
 
-  currentLoc(): CharLoc {
+  protected currentLoc(): CharLoc {
     return {
       line: this.line,
       col: this.col,
     };
   }
 
-  tokenLocFromCharLoc(start: CharLoc, end?: CharLoc | null): TokenLoc {
+  protected tokenLocFromCharLoc(start: CharLoc, end?: CharLoc | null): TokenLoc {
     return {
       line: start.line,
       start: start.col,
@@ -82,7 +85,7 @@ export class Tokenizer implements TokenizerInterface {
     };
   }
 
-  tokenFromCurrentChar(kind: TokenKind): Token {
+  protected tokenFromCurrentChar(kind: TokenKind): Token {
     return {
       kind: kind,
       value: this.iter.current()!,
@@ -90,14 +93,14 @@ export class Tokenizer implements TokenizerInterface {
     };
   }
 
-  ingestNewLine(): Token {
+  protected ingestNewLine(): Token {
     const token = this.tokenFromCurrentChar(TokenKind.NewLine);
     this.col = -1;
     this.line++;
     return token;
   }
 
-  ingestSpace(): Token {
+  protected ingestSpace(): Token {
     const start = this.currentLoc();
     let word = this.iter.current()!;
     while (this.iter.nextIf(isSpaceChar)) {
@@ -111,7 +114,7 @@ export class Tokenizer implements TokenizerInterface {
     };
   }
 
-  ingestString(): Token {
+  protected ingestString(): Token {
     const start = this.currentLoc();
     let charBegin = this.iter.current();
     let word = this.iter.current()!;
@@ -145,7 +148,7 @@ export class Tokenizer implements TokenizerInterface {
       value: word
     };
   }
-  ingestIdOrString(): Token {
+  protected ingestIdOrString(): Token {
     const start = this.currentLoc();
     let charBegin = this.iter.current();
     let word = this.iter.current()!;
@@ -162,7 +165,7 @@ export class Tokenizer implements TokenizerInterface {
     };
   }
 
-  ingestNumber(): Token {
+  protected ingestNumber(): Token {
     const start = this.currentLoc();
     let word = this.iter.current()!;
     let charEnd;
@@ -181,7 +184,7 @@ export class Tokenizer implements TokenizerInterface {
     };
   }
 
-  ingest(): Token {
+  protected ingest(): Token {
     switch (true) {
       case this.iter.is("\n"):
         return this.ingestNewLine();

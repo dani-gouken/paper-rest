@@ -5,12 +5,16 @@ export class Statement {
     constructor(private tokens: Token[]) {
     }
 
-    add(token: Token){
+    add(token: Token) {
         this.tokens.push(token);
     }
 
     getTokens() {
         return this.tokens;
+    }
+
+    length() {
+        return this.tokens.length;
     }
 
     getTerminalToken(): Token {

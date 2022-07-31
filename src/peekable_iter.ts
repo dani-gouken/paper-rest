@@ -55,4 +55,7 @@ export class PeekableIter<T> {
         return this.current() === expected;
     }
 
+    all(): T[] {
+        return this.items;
+    }
 }

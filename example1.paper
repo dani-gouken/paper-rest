@@ -1,11 +1,32 @@
-url = "https://google.fr"
-openGoogle =  get url {
-    header {
-        x-api-key: "key",
-        version: "..1",
-        Content-Type: "application/json"
-    };
-    query {userId: 1 - 1};
+var url, "http://api.com";
+client payment {
+    var {
+        string url;
+        number string, "+237650675795";
+    }
+
+    get  @url {
+        header  x-api-key, key;
+            >   version, 1;
+            >   Content-Type, application/json;
+        
+        query: {userId: 1-1};
+    }
 }
 
-postGoogle = post url;
+post(iniatiate-payment,"https://google.fr"){
+    header(content-type,application/json);
+    query-params([userId: 1, apiKey: "foo"]);
+    query(){
+        description "foobar";
+        key "userId";
+        value "foo";
+    }
+    
+    json """
+        {
+            "amount": 1000  
+        }
+    """;
+    max-timeout: 600
+}
